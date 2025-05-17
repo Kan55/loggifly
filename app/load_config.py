@@ -162,15 +162,20 @@ class WebhookConfig(BaseConfigModel):
     url: str
     headers: Optional[dict] = Field(default=None)
 
+class TelegramConfig(BaseConfigModel):
+    bot_token: str
+    chat_id: int
+
 class NotificationsConfig(BaseConfigModel):
     ntfy: Optional[NtfyConfig] = Field(default=None, validate_default=False)
     apprise: Optional[AppriseConfig] = Field(default=None, validate_default=False)
     webhook: Optional[WebhookConfig] = Field(default=None, validate_default=False)
+    telegram:  Optional[TelegramConfig] = Field(default=None, validate_default=False)
 
     @model_validator(mode="after")
     def check_at_least_one(self) -> "NotificationsConfig":
-        if self.ntfy is None and self.apprise is None and self.webhook is None:
-            raise ValueError("At least on of these has to be configured: 'apprise' / 'ntfy' / 'webhook'")
+        if self.ntfy is None and self.apprise is None and self.webhook is None and self.telegram is None:
+            raise ValueError("At least on of these has to be configured: 'apprise' / 'ntfy' / 'webhook' / 'telegram'")
         return self
 
 class Settings(BaseConfigModel):    

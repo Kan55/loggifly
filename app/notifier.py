@@ -4,6 +4,8 @@ import logging
 import urllib.parse
 import json
 import apprise
+import telegram
+import asyncio
 from load_config import GlobalConfig
 
 logging.getLogger(__name__)
@@ -107,7 +109,12 @@ def send_webhook(json_data, url, headers):
             logging.error("Error while trying to send POST request to custom webhook: %s", response.text)
     except requests.RequestException as e:
         logging.error(f"Error trying to send webhook to url: {url}, headers: {headers}: %s", e)
-
+async def telegramMessage(bot,message,chat_id):
+    async with bot:
+        await bot.send_message(text=message,parse_mode=telegram.constants.ParseMode.HTML,chat_id = chat_id)
+def send_telegram(bot_token,chat_id,message):
+    bot = telegram.Bot(bot_token) 
+    asyncio.run(telegramMessage(bot,message,chat_id))
 
 def send_notification(config: GlobalConfig, container_name, title, message, keywords=None, hostname=None, file_path=None):
     message = message.replace(r"\n", "\n").strip()
@@ -127,3 +134,7 @@ def send_notification(config: GlobalConfig, container_name, title, message, keyw
         webhook_url = config.notifications.webhook.url
         webhook_headers = config.notifications.webhook.headers
         send_webhook(json_data, webhook_url, webhook_headers)
+    if (config.notifications and config.notifications.telegram and config.notifications.telegram.bot_token and config.notifications.telegram.chat_id):
+        bot_token = config.notifications.telegram.bot_token
+        chat_id = config.notifications.telegram.chat_id
+        send_telegram(bot_token, chat_id, message)
