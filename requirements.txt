@@ -4,4 +4,4 @@ pyyaml
 watchdog
 apprise
 pydantic
-telegram
+python-telegram-bot
